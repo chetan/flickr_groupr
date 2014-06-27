@@ -6,6 +6,7 @@ require "fileutils"
 require "flickraw"
 
 CONFIG_FILE = File.expand_path("../.groupr", __FILE__)
+VERBOSE = (ARGV.shift == "--verbose")
 
 def do_oauth
 
@@ -109,7 +110,7 @@ if File.exists?(CONFIG_FILE) then
   flickr.access_secret   = config["access_secret"]
 
   login = flickr.test.login
-  puts "You are now authenticated as #{login.username}"
+  puts "You are now authenticated as #{login.username}" if VERBOSE
 
 else
   do_oauth()
@@ -123,7 +124,7 @@ if File.exists?(LAST_RUN_FILE) then
   per_page = 50
 end
 
-puts sprintf("Searching for new photos in album '%s' to add to '%s'", config["album"]["name"], config["group"]["name"])
+puts sprintf("Searching for new photos in album '%s' to add to '%s'", config["album"]["name"], config["group"]["name"]) if VERBOSE
 
 photos = flickr.photosets.getPhotos(:photoset_id => config["album"]["id"],
                                     :extras => "date_upload", :per_page => per_page)
@@ -133,17 +134,21 @@ photos.each do |photo|
   date = Time.at(photo["dateupload"].to_i)
   if date >= recent_time then
     # new photo! add to group
-    puts sprintf("* adding new photo '%s' (%s) to group", photo["title"], photo["id"])
+    puts sprintf("* adding new photo '%s' (%s) to group", photo["title"], photo["id"]) if VERBOSE
     begin
       flickr.groups.pools.add(:photo_id => photo["id"], :group_id => config["group"]["id"])
     rescue FlickRaw::FailedResponse => ex
       if ex.message =~ /already/ then
-        puts sprintf("  (oops, photo was already in the group! moving on)")
+        puts sprintf("  (oops, photo was already in the group! moving on)") if VERBOSE
       else
-        puts "  ERROR! #{ex.message}"
+        warn "  ERROR! #{ex.message}"
+        if !VERBOSE then
+          warn sprintf("         while adding photo '%s' (%s) to group '%s'", photo["title"], photo["id"], config["group"]["name"])
+        end
       end
     end
   end
 end
 
 FileUtils.touch(LAST_RUN_FILE)
+puts "Done!" if VERBOSE
