@@ -18,6 +18,8 @@ module Flickr
 
         login = flickr.test.login
         puts "You are now authenticated as #{login.username}" if VERBOSE
+
+        return config
       end
 
       def save_config(config)
