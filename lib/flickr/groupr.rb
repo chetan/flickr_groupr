@@ -4,6 +4,8 @@ require "oj"
 require "fileutils"
 require "flickraw"
 
+require "flickr/groupr/photo"
+
 module Flickr
   module Groupr
 
@@ -22,7 +24,7 @@ module Flickr
     end
 
     def save_config(config)
-      File.open(CONFIG_FILE, 'w'){ |f| f.write(MultiJson.dump(config)) }
+      File.open(CONFIG_FILE, 'w'){ |f| f.write(MultiJson.dump(config, :pretty => true)) }
     end
 
     def do_oauth
@@ -42,8 +44,7 @@ module Flickr
 
       puts "You must authorize this app to access your flickr account"
       puts "Open this url in your browser to complete the authication process:\n#{auth_url}"
-      STDOUT.write "Authorization code (XXX-XXX-XXX): "
-      verify = gets.strip
+      verify = prompt("Authorization code (XXX-XXX-XXX)")
 
       begin
         flickr.get_access_token(token['oauth_token'], token['oauth_token_secret'], verify)
@@ -112,6 +113,12 @@ module Flickr
         :id   => album["id"],
         :name => album["title"]
       }
+    end
+
+    # Display an input prompt and return the entered line of text
+    def prompt(msg)
+      STDOUT.write "#{msg}: "
+      return gets.strip
     end
 
   end
