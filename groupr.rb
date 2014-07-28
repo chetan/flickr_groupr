@@ -25,7 +25,7 @@ class GrouprApp
     recent_time = Time.new-86400*7
     per_page = 500
     if File.exists?(LAST_RUN_FILE) then
-      recent_time = File.mtime(LAST_RUN_FILE)
+      recent_time = File.mtime(LAST_RUN_FILE)-(3600*3) # less a few hours of buffer time
       per_page = 50
     end
 
