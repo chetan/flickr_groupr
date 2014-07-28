@@ -56,7 +56,9 @@ class EmailrApp
     if config["smtp"]["address"] && !config["smtp"]["address"].empty? then
       config["smtp"]["authentication"] = config["smtp"]["authentication"].to_sym
       options[:via] = :smtp
-      options[:via_options] = config["smtp"]
+      smtp_opts = {}
+      config["smtp"].each { |k,v| smtp_opts[k.to_sym] = v } # convert smtp option keys to symbols for pony
+      options[:via_options] = smtp_opts
     else
       options[:via] = :sendmail
     end
