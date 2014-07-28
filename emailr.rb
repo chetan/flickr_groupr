@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require "awesome_print"
 require "pony"
 require "roadie"
 require "nokogiri"
