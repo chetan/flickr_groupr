@@ -50,9 +50,10 @@ class EmailrApp
       :from      => config["from"],
       :to        => config["to"],
       :subject   => data[:subject],
-      :html_body => html,
-
+      :html_body => html
     }
+    options[:bcc] = config["bcc"] if config["bcc"] && !config["bcc"].empty?
+
     if config["smtp"]["address"] && !config["smtp"]["address"].empty? then
       config["smtp"]["authentication"] = config["smtp"]["authentication"].to_sym
       options[:via] = :smtp
