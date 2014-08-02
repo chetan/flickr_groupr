@@ -10,28 +10,31 @@ LAST_RUN_FILE = File.expand_path("../.last_run", __FILE__)
 class GrouprApp
   include Flickr::Groupr
 
-  def run
+  attr_reader :config, :recent_time, :per_page
 
+  def initialize
     if File.exists?(CONFIG_FILE) then
-      config = load_config()
+      @config = load_config()
 
     else
-      config = do_oauth()
-      config[:group] = select_group()
-      config[:album] = select_album()
-      save_config()
+      @config = do_oauth()
+      @config[:group] = select_group()
+      @config[:album] = select_album()
+      save_config(@config)
     end
 
-    recent_time = Time.new-86400*7
-    per_page = 500
+    @per_page = 500
+    @recent_time = Time.new-86400*7
     if File.exists?(LAST_RUN_FILE) then
-      recent_time = File.mtime(LAST_RUN_FILE)-(86400*3) # less a few hours of buffer time
+      @recent_time = File.mtime(LAST_RUN_FILE)-(3600*3) # less a few hours of buffer time
     end
+  end
 
+  def run
     puts sprintf("Searching for new photos in album '%s' to add to '%s'", config["album"]["name"], config["group"]["name"]) if VERBOSE
 
     res = flickr.photosets.getPhotos(:photoset_id => config["album"]["id"],
-                                        :extras => "date_upload", :per_page => per_page)
+                                        :extras => "date_upload", :per_page => @per_page)
     total_pages = res["pages"].to_i
     add_to_group(res["photo"])
 
@@ -40,7 +43,7 @@ class GrouprApp
         puts sprintf("\nFetching page %s of %s", page, total_pages) if VERBOSE
         res = flickr.photosets.getPhotos(:photoset_id => config["album"]["id"],
                                          :extras => "date_upload",
-                                         :per_page => per_page, :page => page)
+                                         :per_page => @per_page, :page => page)
         add_to_group(res["photo"])
       end
     end
@@ -52,9 +55,9 @@ class GrouprApp
   def add_to_group(photos)
     photos.each do |photo|
       date = Time.at(photo["dateupload"].to_i)
-      if date < recent_time then
+      if date < @recent_time then
         # old photo
-        puts sprintf("* skipping photo %s: %s < %s", photo["id"], date, recent_time) if VERBOSE
+        puts sprintf("* skipping photo %s: %s < %s", photo["id"], date, @recent_time) if VERBOSE
         next
       end
 
