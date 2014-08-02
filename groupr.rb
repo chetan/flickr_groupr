@@ -32,9 +32,24 @@ class GrouprApp
 
     res = flickr.photosets.getPhotos(:photoset_id => config["album"]["id"],
                                         :extras => "date_upload", :per_page => per_page)
-    total_pages = res["pages"]
+    total_pages = res["pages"].to_i
+    add_to_group(res["photo"])
 
-    photos = res["photo"]
+    if total_pages > 1 then
+      (2..total_pages).each do |page|
+        puts sprintf("\nFetching page %s of %s", page, total_pages) if VERBOSE
+        res = flickr.photosets.getPhotos(:photoset_id => config["album"]["id"],
+                                         :extras => "date_upload",
+                                         :per_page => per_page, :page => page)
+        add_to_group(res["photo"])
+      end
+    end
+
+    FileUtils.touch(LAST_RUN_FILE)
+    puts "Done!" if VERBOSE
+  end
+
+  def add_to_group(photos)
     photos.each do |photo|
       date = Time.at(photo["dateupload"].to_i)
       if date < recent_time then
@@ -58,11 +73,8 @@ class GrouprApp
         end
       end
     end
-
-    FileUtils.touch(LAST_RUN_FILE)
-    puts "Done!" if VERBOSE
-
   end
+
 end
 
 GrouprApp.new.run
