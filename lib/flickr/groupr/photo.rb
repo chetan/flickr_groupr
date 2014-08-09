@@ -16,8 +16,13 @@ module Flickr
         Time.parse(self["datetaken"])
       end
 
-      def upload_date
+      def date_added
         Time.at(self["dateadded"].to_i)
+      end
+
+      def upload_date
+        d = self["dateupload"] || self["dateadded"]
+        Time.at(d.to_i)
       end
 
       def url
