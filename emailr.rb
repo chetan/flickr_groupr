@@ -24,14 +24,7 @@ class EmailrApp
     @cutoff.strftime("%b %-d, %Y")
   end
 
-  def send_email(photos, config)
-
-    # create email body html
-    data = {
-      photos:  photos,
-      title:   config["title"],
-      subject: sprintf("%s %s", config["subject"], Time.new.strftime("%b %-d, %Y"))
-    }
+  def render_html_body(data)
     tpl = Tilt::ERBTemplate.new("template/email.html.erb")
     html = tpl.render(self, data)
 
@@ -43,7 +36,25 @@ class EmailrApp
       next if comment.text.strip =~ /^\[if/
       comment.replace("")
     end
-    html = TidyFFI::Tidy.clean(doc.serialize)
+    html = doc.serialize
+
+    if TidyFFI::Tidy.clean("<html></html>") =~ /html/ then
+      # make sure we have a working tidy on this system
+      html = TidyFFI::Tidy.clean(html)
+    end
+
+    return html
+  end
+
+  def send_email(photos, config)
+
+    # create email body html
+    data = {
+      photos:  photos,
+      title:   config["title"],
+      subject: sprintf("%s %s", config["subject"], Time.new.strftime("%b %-d, %Y"))
+    }
+    html = render_html_body(data)
 
     # send email
     options = {
