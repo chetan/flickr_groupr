@@ -32,6 +32,10 @@ module Flickr
         has?("description")
       end
 
+      def video?
+        self["media"] == "video"
+      end
+
 
       private
 
