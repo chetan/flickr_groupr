@@ -39,8 +39,10 @@ class EmailrApp
     html = doc.serialize
 
     if TidyFFI::Tidy.clean("<html></html>") =~ /html/ then
-      # make sure we have a working tidy on this system
-      html = TidyFFI::Tidy.clean(html)
+      tidy = TidyFFI::Tidy.clean(html)
+      if !(tidy.nil? || tidy.strip.empty?) && tidy =~ /html/ then
+        html = tidy
+      end
     end
 
     return html
