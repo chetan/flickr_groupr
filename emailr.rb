@@ -118,6 +118,11 @@ class EmailrApp
       data << photo
     end
 
+    if data.empty? then
+      puts "hm... no photos this week or something went wrong!"
+      exit 1
+    end
+
     send_email(data, config)
   end
 
