@@ -106,7 +106,7 @@ class EmailrApp
 
     photos = flickr.groups.pools.getPhotos(
                 :group_id => config["group"]["id"],
-                :extras => "description,date_upload,date_taken,url_n,owner_name",
+                :extras => "description,date_upload,date_taken,url_n,owner_name,media",
                 :per_page => 100)
 
     data = []
