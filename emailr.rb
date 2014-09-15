@@ -123,6 +123,8 @@ class EmailrApp
       exit 1
     end
 
+    data.sort!{ |a,b| a.date <=> b.date } # sort by date taken
+
     send_email(data, config)
   end
 
