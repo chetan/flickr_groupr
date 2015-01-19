@@ -100,6 +100,8 @@
       <% photos.each do |photo| %>
         <% if photo.has_title? then %>
           <h4><%= photo["title"] %><% if photo.video? then %> [video]<% end %></h4>
+        <% elsif photo.video? then %>
+          <h4>[video]</h4>
         <% end %>
         <p>
           <a href="<%= photo.url %>" target="_blank">
