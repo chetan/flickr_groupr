@@ -17,7 +17,7 @@ class EmailrApp
   include Flickr::Groupr
 
   def initialize
-    @cutoff = Time.new - 86400*7
+    @cutoff = Time.new - 86400*8
   end
 
   def email_date
@@ -81,9 +81,9 @@ class EmailrApp
     puts "email sent"
   end
 
-  def run
+  def load_config
     if File.exists?(CONFIG_FILE) then
-      config = load_config()
+      config = super
 
     else
       puts "running autoconfiguration"
@@ -106,6 +106,10 @@ class EmailrApp
       puts "config defaults to /usr/bin/sendmail. edit .emailr to use an smtp server"
     end
 
+    return config
+  end
+
+  def get_photos(config)
     photos = flickr.groups.pools.getPhotos(
                 :group_id => config["group"]["id"],
                 :extras => "description,date_upload,date_taken,url_n,owner_name,media",
@@ -120,12 +124,18 @@ class EmailrApp
       data << photo
     end
 
+    data.sort!{ |a,b| a.date <=> b.date } # sort by date taken
+    return data
+  end
+
+  def run
+    config = load_config()
+
+    data = get_photos(config)
     if data.empty? then
       puts "hm... no photos this week or something went wrong!"
       exit 1
     end
-
-    data.sort!{ |a,b| a.date <=> b.date } # sort by date taken
 
     send_email(data, config)
   end
