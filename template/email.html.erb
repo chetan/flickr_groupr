@@ -95,6 +95,11 @@
 
       <h1><%= title %></h1>
       <h3>Updates for the week of <%= email_date() %></h3>
+
+      <% if text && !text.empty? then %>
+      <%= text %>
+      <% end %>
+
       <hr />
 
       <% photos.each do |photo| %>

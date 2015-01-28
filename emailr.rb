@@ -10,6 +10,7 @@ $: << File.expand_path("../lib", __FILE__)
 require "flickr/groupr"
 
 CONFIG_FILE = File.expand_path("../.emailr", __FILE__)
+TEXT_FILE = File.expand_path("../this_week.md", __FILE__)
 VERBOSE = (ARGV.shift == "--verbose")
 
 
@@ -25,6 +26,14 @@ class EmailrApp
   end
 
   def render_html_body(data)
+
+    tf = text_file()
+    data[:text] = nil
+    if tf then
+      text = Tilt[tf].new(tf).render()
+      data[:text] = text
+    end
+
     tpl = Tilt::ERBTemplate.new("template/email.html.erb")
     html = tpl.render(self, data)
 
@@ -102,6 +111,7 @@ class EmailrApp
       config["smtp"] = { :address => "", :port => 587, :enable_starttls_auto => true,
                         :user_name => "", :password => "", :authentication => :plain,
                         :domain => "localhost.localdomain" }
+
       save_config(config)
       puts "config defaults to /usr/bin/sendmail. edit .emailr to use an smtp server"
     end
@@ -126,6 +136,13 @@ class EmailrApp
 
     data.sort!{ |a,b| a.date <=> b.date } # sort by date taken
     return data
+  end
+
+  def text_file
+    if File.exists?(TEXT_FILE) && File.stat(TEXT_FILE).mtime > @cutoff then
+      return TEXT_FILE
+    end
+    nil
   end
 
   def run
