@@ -18,7 +18,7 @@ class EmailrApp
   include Flickr::Groupr
 
   def initialize
-    @cutoff = Time.new - 86400*8
+    @cutoff = Time.new - 86400*7
   end
 
   def email_date
