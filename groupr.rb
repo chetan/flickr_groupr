@@ -5,7 +5,7 @@ require "flickr/groupr"
 
 CONFIG_FILE = File.expand_path("../.groupr", __FILE__)
 VERBOSE = (ARGV.shift == "--verbose")
-LAST_RUN_FILE = File.expand_path("../.last_run", __FILE__)
+LAST_RUN_FILE = File.expand_path("../.last_run_groupr", __FILE__)
 
 class GrouprApp
   include Flickr::Groupr

@@ -5,6 +5,7 @@ require "roadie"
 require "nokogiri"
 require "tilt"
 require "tidy_ffi"
+require "fileutils"
 
 $: << File.expand_path("../lib", __FILE__)
 require "flickr/groupr"
@@ -12,13 +13,14 @@ require "flickr/groupr"
 CONFIG_FILE = File.expand_path("../.emailr", __FILE__)
 TEXT_FILE = File.expand_path("../this_week.md", __FILE__)
 VERBOSE = (ARGV.shift == "--verbose")
+LAST_RUN_FILE = File.expand_path("../.last_run_emailr", __FILE__)
 
 
 class EmailrApp
   include Flickr::Groupr
 
   def initialize
-    @cutoff = Time.new - 86400*7
+    @cutoff = File.exists?(LAST_RUN_FILE) ? File.mtime(LAST_RUN_FILE) : (Time.new - 86400*7)
   end
 
   def email_date
@@ -87,7 +89,8 @@ class EmailrApp
     end
 
     Pony.mail(options)
-    puts "email sent"
+    puts "email sent" if ENV["debug"] == "1"
+    FileUtils.touch(LAST_RUN_FILE)
   end
 
   def load_config
